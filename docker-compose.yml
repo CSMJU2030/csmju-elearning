@@ -1,0 +1,18 @@
+# ฐานข้อมูล PostgreSQL สำหรับเครื่องพัฒนา (ใช้แทนการติดตั้ง PostgreSQL เองได้)
+#   docker compose up -d db
+# แล้วตั้ง backend/.env: DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@localhost:5434/csmju_elearning_db?schema=public
+# รหัสผ่านอ่านจาก env POSTGRES_PASSWORD ของเครื่อง (ห้ามเขียนลงไฟล์นี้)
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: csmju_elearning_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?ตั้ง POSTGRES_PASSWORD ก่อนรัน}
+    ports:
+      - "5434:5432"
+    volumes:
+      - elearning-db:/var/lib/postgresql/data
+
+volumes:
+  elearning-db:

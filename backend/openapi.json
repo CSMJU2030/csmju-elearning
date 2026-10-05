@@ -1,0 +1,2063 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/health": {
+      "get": {
+        "operationId": "HealthController_check",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/api/v1/me": {
+      "get": {
+        "operationId": "MeController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "ตัวตนของผู้เรียก (จาก token) · session.expiresAt ใช้ต่ออายุล่วงหน้า",
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/api/v1/curriculum-courses": {
+      "get": {
+        "operationId": "CoreHubController_curriculumCourses",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "คำค้น (รหัสหรือชื่อ)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "รายวิชาในหลักสูตรที่ยังเปิดใช้ (จาก cache ข้อมูลกลางของ Core Hub)",
+        "tags": [
+          "core-hub"
+        ]
+      }
+    },
+    "/api/v1/staff-people": {
+      "get": {
+        "operationId": "CoreHubController_staffPeople",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "คำค้น (รหัสหรือชื่อ)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "ค้นบุคลากรจาก Core Hub เพื่อมอบหมายเป็นอาจารย์ประจำสายงาน/วิชา (ไม่ cache)",
+        "tags": [
+          "core-hub"
+        ]
+      }
+    },
+    "/api/v1/tracks": {
+      "get": {
+        "operationId": "TracksController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "includeUnpublished",
+            "required": false,
+            "in": "query",
+            "description": "ผู้ดูแลเห็นสายงานที่ยังไม่เผยแพร่ด้วย",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "สายงานทั้งหมด พร้อมจำนวนผู้เรียน/ผู้เรียนจบ และสถานะของผู้เรียก",
+        "tags": [
+          "tracks"
+        ]
+      },
+      "post": {
+        "operationId": "TracksController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTrackDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "เพิ่มสายงาน",
+        "tags": [
+          "tracks"
+        ]
+      }
+    },
+    "/api/v1/tracks/{id}": {
+      "get": {
+        "operationId": "TracksController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "รายละเอียดสายงาน วิชาที่ต้องเรียน และรายชื่อผู้เรียนจบล่าสุด",
+        "tags": [
+          "tracks"
+        ]
+      },
+      "patch": {
+        "operationId": "TracksController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTrackDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "แก้ไขสายงาน",
+        "tags": [
+          "tracks"
+        ]
+      },
+      "delete": {
+        "operationId": "TracksController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "ลบสายงาน (เฉพาะที่ยังไม่มีผู้สมัคร)",
+        "tags": [
+          "tracks"
+        ]
+      }
+    },
+    "/api/v1/tracks/{id}/graduates": {
+      "get": {
+        "operationId": "TracksController_graduates",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "includeUnpublished",
+            "required": false,
+            "in": "query",
+            "description": "ผู้ดูแลเห็นสายงานที่ยังไม่เผยแพร่ด้วย",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "ผู้เรียนจบสายงานนี้ (รหัสบุคคล · วันที่ได้เกียรติบัตร)",
+        "tags": [
+          "tracks"
+        ]
+      }
+    },
+    "/api/v1/courses": {
+      "get": {
+        "operationId": "CoursesController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "trackId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "includeUnpublished",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "วิชาในสายงาน",
+        "tags": [
+          "courses"
+        ]
+      },
+      "post": {
+        "operationId": "CoursesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCourseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "เพิ่มวิชาในสายงาน",
+        "tags": [
+          "courses"
+        ]
+      }
+    },
+    "/api/v1/courses/{id}": {
+      "get": {
+        "operationId": "CoursesController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "โครงวิชา (หัวข้อ · วิดีโอ) · ลิงก์วิดีโอเฉพาะผู้ดูแล",
+        "tags": [
+          "courses"
+        ]
+      },
+      "patch": {
+        "operationId": "CoursesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCourseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "แก้ไขวิชา (รวมจำนวนข้อที่ต้องตอบถูก)",
+        "tags": [
+          "courses"
+        ]
+      },
+      "delete": {
+        "operationId": "CoursesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "ลบวิชา",
+        "tags": [
+          "courses"
+        ]
+      }
+    },
+    "/api/v1/topics": {
+      "post": {
+        "operationId": "TopicsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTopicDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "เพิ่มหัวข้อในวิชา",
+        "tags": [
+          "topics"
+        ]
+      }
+    },
+    "/api/v1/topics/{id}": {
+      "patch": {
+        "operationId": "TopicsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTopicDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "แก้ไขหัวข้อ",
+        "tags": [
+          "topics"
+        ]
+      },
+      "delete": {
+        "operationId": "TopicsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "ลบหัวข้อ (และวิดีโอในหัวข้อ)",
+        "tags": [
+          "topics"
+        ]
+      }
+    },
+    "/api/v1/videos": {
+      "post": {
+        "operationId": "VideosController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateVideoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "เพิ่มวิดีโอการสอนในหัวข้อ",
+        "tags": [
+          "videos"
+        ]
+      }
+    },
+    "/api/v1/videos/{id}": {
+      "patch": {
+        "operationId": "VideosController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateVideoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "แก้ไขวิดีโอ",
+        "tags": [
+          "videos"
+        ]
+      },
+      "delete": {
+        "operationId": "VideosController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "ลบวิดีโอ",
+        "tags": [
+          "videos"
+        ]
+      }
+    },
+    "/api/v1/quiz-questions": {
+      "get": {
+        "operationId": "QuizQuestionsController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "courseId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "คำถามแบบทดสอบของวิชา (มีเฉลย — ผู้ดูแลเท่านั้น)",
+        "tags": [
+          "quiz-questions"
+        ]
+      },
+      "post": {
+        "operationId": "QuizQuestionsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateQuestionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "เพิ่มคำถามแบบทดสอบท้ายวิชา",
+        "tags": [
+          "quiz-questions"
+        ]
+      }
+    },
+    "/api/v1/quiz-questions/{id}": {
+      "patch": {
+        "operationId": "QuizQuestionsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateQuestionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "แก้ไขคำถาม (ส่ง choices มา = แทนที่ตัวเลือกทั้งหมด)",
+        "tags": [
+          "quiz-questions"
+        ]
+      },
+      "delete": {
+        "operationId": "QuizQuestionsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "ลบคำถาม",
+        "tags": [
+          "quiz-questions"
+        ]
+      }
+    },
+    "/api/v1/enrollments": {
+      "get": {
+        "operationId": "EnrollmentsController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ACTIVE",
+                "COMPLETED",
+                "WITHDRAWN"
+              ]
+            }
+          },
+          {
+            "name": "trackId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "scope",
+            "required": false,
+            "in": "query",
+            "description": "any = ของทุกคน (ผู้ดูแลเท่านั้น)",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "own",
+                "any"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "การสมัครเรียนของผู้เรียก (scope=any = ของทุกคน สำหรับผู้ดูแล)",
+        "tags": [
+          "enrollments"
+        ]
+      },
+      "post": {
+        "operationId": "EnrollmentsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEnrollmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "สมัครเรียนสายงาน (กำลังเรียนได้ทีละ 1 สายงาน · 409 ถ้ามีสายงานที่ยังเรียนไม่จบ)",
+        "tags": [
+          "enrollments"
+        ]
+      }
+    },
+    "/api/v1/enrollments/{id}": {
+      "get": {
+        "operationId": "EnrollmentsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "ความคืบหน้ารายวิชาของการสมัครเรียน",
+        "tags": [
+          "enrollments"
+        ]
+      }
+    },
+    "/api/v1/enrollments/{id}/withdraw": {
+      "post": {
+        "operationId": "EnrollmentsController_withdraw",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "ออกจากสายงาน — ความคืบหน้าในสายงานนี้ถูกล้างเป็น 0",
+        "tags": [
+          "enrollments"
+        ]
+      }
+    },
+    "/api/v1/courses/{id}/outline": {
+      "get": {
+        "operationId": "LearningController_outline",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "บทเรียนของวิชาพร้อมสถานะ (ล็อก/เรียนได้/จบแล้ว) ของผู้เรียก",
+        "tags": [
+          "learning"
+        ]
+      }
+    },
+    "/api/v1/videos/{id}/heartbeats": {
+      "post": {
+        "operationId": "LearningController_heartbeat",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HeartbeatDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "บันทึกเวลาเรียนจริง (heartbeat ทุก ~10 วินาทีระหว่างวิดีโอเล่น)",
+        "tags": [
+          "learning"
+        ]
+      }
+    },
+    "/api/v1/courses/{id}/quiz": {
+      "get": {
+        "operationId": "LearningController_quiz",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "คำถามแบบทดสอบท้ายวิชา (ไม่มีเฉลย)",
+        "tags": [
+          "learning"
+        ]
+      }
+    },
+    "/api/v1/quiz-attempts": {
+      "post": {
+        "operationId": "LearningController_submit",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateQuizAttemptDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "ส่งคำตอบแบบทดสอบ — ผ่านวิชาสุดท้าย = จบสายงาน + ได้เกียรติบัตร",
+        "tags": [
+          "learning"
+        ]
+      }
+    },
+    "/api/v1/learner-profile": {
+      "get": {
+        "operationId": "LearningController_profile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "โปรไฟล์ผู้เรียก: สายงานที่กำลังเรียน · สายงานที่จบแล้ว (ชื่อจาก Core Hub ไม่เก็บ)",
+        "tags": [
+          "learning"
+        ]
+      }
+    },
+    "/api/v1/certificates": {
+      "get": {
+        "operationId": "CertificatesController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "trackId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "scope",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "own",
+                "any"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "เกียรติบัตรของผู้เรียก (เมนูความสำเร็จ) · scope=any สำหรับผู้ดูแล",
+        "tags": [
+          "certificates"
+        ]
+      }
+    },
+    "/api/v1/certificates/{id}": {
+      "get": {
+        "operationId": "CertificatesController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "ข้อมูลเกียรติบัตรสำหรับแสดงและดาวน์โหลด",
+        "tags": [
+          "certificates"
+        ]
+      }
+    },
+    "/api/v1/certificate-templates": {
+      "get": {
+        "operationId": "CertificateTemplatesController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "เทมเพลตเกียรติบัตร",
+        "tags": [
+          "certificate-templates"
+        ]
+      },
+      "post": {
+        "operationId": "CertificateTemplatesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCertificateTemplateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "เพิ่มเทมเพลตเกียรติบัตร",
+        "tags": [
+          "certificate-templates"
+        ]
+      }
+    },
+    "/api/v1/certificate-templates/{id}": {
+      "get": {
+        "operationId": "CertificateTemplatesController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "certificate-templates"
+        ]
+      },
+      "patch": {
+        "operationId": "CertificateTemplatesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCertificateTemplateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "certificate-templates"
+        ]
+      },
+      "delete": {
+        "operationId": "CertificateTemplatesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "certificate-templates"
+        ]
+      }
+    },
+    "/api/v1/track-statistics": {
+      "get": {
+        "operationId": "DashboardController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "สถิติรายสายงาน: ยอดนิยม · อัตราเรียนจบ · อัตราออกจากสายงาน",
+        "tags": [
+          "dashboard"
+        ]
+      }
+    },
+    "/api/v1/instructor-assignments": {
+      "get": {
+        "operationId": "AssignmentsController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "trackId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "อาจารย์ประจำสายงาน/วิชา (อาจารย์เห็นเฉพาะของตัวเอง)",
+        "tags": [
+          "instructor-assignments"
+        ]
+      },
+      "post": {
+        "operationId": "AssignmentsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAssignmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "มอบหมายอาจารย์ให้ดูแลสายงานหรือวิชา",
+        "tags": [
+          "instructor-assignments"
+        ]
+      }
+    },
+    "/api/v1/instructor-assignments/{id}": {
+      "delete": {
+        "operationId": "AssignmentsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "ยกเลิกการมอบหมาย",
+        "tags": [
+          "instructor-assignments"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "CSMJU E-Learning API",
+    "description": "เรียนตามสายงานวิทยาการคอมพิวเตอร์ · token มาจาก Core Hub SSO",
+    "version": "1.0.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "CreateTrackDto": {
+        "type": "object",
+        "properties": {
+          "nameTh": {
+            "type": "string",
+            "example": "นักพัฒนาซอฟต์แวร์"
+          },
+          "nameEn": {
+            "type": "string",
+            "example": "Programmer / Software Developer"
+          },
+          "slug": {
+            "type": "string",
+            "description": "ตัวระบุใน URL (a-z 0-9 -) · ไม่ส่งมาระบบสร้างให้"
+          },
+          "summary": {
+            "type": "string",
+            "description": "คำอธิบายสั้นบนการ์ด"
+          },
+          "description": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string",
+            "enum": [
+              "BLUE",
+              "PURPLE",
+              "RED",
+              "YELLOW",
+              "TEAL"
+            ]
+          },
+          "sortOrder": {
+            "type": "number"
+          },
+          "isPublished": {
+            "type": "boolean"
+          },
+          "certificateTemplateId": {
+            "type": "object",
+            "description": "เทมเพลตเกียรติบัตรของสายงาน · ไม่ระบุใช้เทมเพลตตั้งต้น"
+          }
+        },
+        "required": [
+          "nameTh",
+          "color"
+        ]
+      },
+      "UpdateTrackDto": {
+        "type": "object",
+        "properties": {
+          "nameTh": {
+            "type": "string",
+            "example": "นักพัฒนาซอฟต์แวร์"
+          },
+          "nameEn": {
+            "type": "string",
+            "example": "Programmer / Software Developer"
+          },
+          "slug": {
+            "type": "string",
+            "description": "ตัวระบุใน URL (a-z 0-9 -) · ไม่ส่งมาระบบสร้างให้"
+          },
+          "summary": {
+            "type": "string",
+            "description": "คำอธิบายสั้นบนการ์ด"
+          },
+          "description": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string",
+            "enum": [
+              "BLUE",
+              "PURPLE",
+              "RED",
+              "YELLOW",
+              "TEAL"
+            ]
+          },
+          "sortOrder": {
+            "type": "number"
+          },
+          "isPublished": {
+            "type": "boolean"
+          },
+          "certificateTemplateId": {
+            "type": "object",
+            "description": "เทมเพลตเกียรติบัตรของสายงาน · ไม่ระบุใช้เทมเพลตตั้งต้น"
+          }
+        }
+      },
+      "CreateCourseDto": {
+        "type": "object",
+        "properties": {
+          "trackId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string",
+            "example": "พื้นฐานการเขียนโปรแกรม"
+          },
+          "courseCode": {
+            "type": "object",
+            "description": "รหัสวิชาของ Core Hub (code เต็มรวมรุ่น) เช่น 10301111-68"
+          },
+          "description": {
+            "type": "string"
+          },
+          "quizPassCount": {
+            "type": "number",
+            "description": "จำนวนข้อที่ต้องตอบถูกจึงจะผ่านแบบทดสอบ",
+            "default": 1
+          },
+          "sortOrder": {
+            "type": "number"
+          },
+          "isPublished": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "trackId",
+          "title"
+        ]
+      },
+      "UpdateCourseDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "พื้นฐานการเขียนโปรแกรม"
+          },
+          "courseCode": {
+            "type": "object",
+            "description": "รหัสวิชาของ Core Hub (code เต็มรวมรุ่น) เช่น 10301111-68"
+          },
+          "description": {
+            "type": "string"
+          },
+          "quizPassCount": {
+            "type": "number",
+            "description": "จำนวนข้อที่ต้องตอบถูกจึงจะผ่านแบบทดสอบ",
+            "default": 1
+          },
+          "sortOrder": {
+            "type": "number"
+          },
+          "isPublished": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CreateTopicDto": {
+        "type": "object",
+        "properties": {
+          "courseId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "sortOrder": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "courseId",
+          "title"
+        ]
+      },
+      "UpdateTopicDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "sortOrder": {
+            "type": "number"
+          }
+        }
+      },
+      "CreateVideoDto": {
+        "type": "object",
+        "properties": {
+          "topicId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "videoUrl": {
+            "type": "string",
+            "description": "ลิงก์ YouTube หรือไฟล์วิดีโอ https"
+          },
+          "durationSeconds": {
+            "type": "number",
+            "description": "ความยาว (วินาที)"
+          },
+          "sortOrder": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "topicId",
+          "title",
+          "videoUrl",
+          "durationSeconds"
+        ]
+      },
+      "UpdateVideoDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "videoUrl": {
+            "type": "string",
+            "description": "ลิงก์ YouTube หรือไฟล์วิดีโอ https"
+          },
+          "durationSeconds": {
+            "type": "number",
+            "description": "ความยาว (วินาที)"
+          },
+          "sortOrder": {
+            "type": "number"
+          }
+        }
+      },
+      "QuizChoiceInput": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "isCorrect": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "label",
+          "isCorrect"
+        ]
+      },
+      "CreateQuestionDto": {
+        "type": "object",
+        "properties": {
+          "courseId": {
+            "type": "string"
+          },
+          "prompt": {
+            "type": "string"
+          },
+          "explanation": {
+            "type": "string",
+            "description": "คำอธิบายเฉลย (แสดงหลังทำแบบทดสอบผ่าน)"
+          },
+          "choices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuizChoiceInput"
+            }
+          },
+          "sortOrder": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "courseId",
+          "prompt",
+          "choices"
+        ]
+      },
+      "UpdateQuestionDto": {
+        "type": "object",
+        "properties": {
+          "prompt": {
+            "type": "string"
+          },
+          "explanation": {
+            "type": "string",
+            "description": "คำอธิบายเฉลย (แสดงหลังทำแบบทดสอบผ่าน)"
+          },
+          "choices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuizChoiceInput"
+            }
+          },
+          "sortOrder": {
+            "type": "number"
+          }
+        }
+      },
+      "CreateEnrollmentDto": {
+        "type": "object",
+        "properties": {
+          "trackId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "trackId"
+        ]
+      },
+      "HeartbeatDto": {
+        "type": "object",
+        "properties": {
+          "positionSeconds": {
+            "type": "number",
+            "description": "ตำแหน่งที่กำลังดู (วินาที)"
+          },
+          "playing": {
+            "type": "boolean",
+            "description": "วิดีโอเล่นอยู่ตลอดช่วงตั้งแต่ heartbeat ครั้งก่อนหรือไม่ (false = เริ่มจับเวลารอบใหม่)"
+          }
+        },
+        "required": [
+          "positionSeconds",
+          "playing"
+        ]
+      },
+      "QuizAnswerInput": {
+        "type": "object",
+        "properties": {
+          "questionId": {
+            "type": "string"
+          },
+          "choiceId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "questionId",
+          "choiceId"
+        ]
+      },
+      "CreateQuizAttemptDto": {
+        "type": "object",
+        "properties": {
+          "courseId": {
+            "type": "string"
+          },
+          "answers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuizAnswerInput"
+            }
+          }
+        },
+        "required": [
+          "courseId",
+          "answers"
+        ]
+      },
+      "CreateCertificateTemplateDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "เทมเพลตมาตรฐาน"
+          },
+          "heading": {
+            "type": "string",
+            "example": "เกียรติบัตร"
+          },
+          "bodyText": {
+            "type": "string",
+            "description": "ใช้ {name} {track} {date} {certificateNo} แทนค่าได้"
+          },
+          "signerName": {
+            "type": "string"
+          },
+          "signerTitle": {
+            "type": "string"
+          },
+          "imageId": {
+            "type": "object",
+            "description": "id ของรูปที่อัปโหลดไว้ใน Core Hub (POST /api/v1/images)"
+          },
+          "isDefault": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "heading",
+          "bodyText",
+          "signerName",
+          "signerTitle"
+        ]
+      },
+      "UpdateCertificateTemplateDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "เทมเพลตมาตรฐาน"
+          },
+          "heading": {
+            "type": "string",
+            "example": "เกียรติบัตร"
+          },
+          "bodyText": {
+            "type": "string",
+            "description": "ใช้ {name} {track} {date} {certificateNo} แทนค่าได้"
+          },
+          "signerName": {
+            "type": "string"
+          },
+          "signerTitle": {
+            "type": "string"
+          },
+          "imageId": {
+            "type": "object",
+            "description": "id ของรูปที่อัปโหลดไว้ใน Core Hub (POST /api/v1/images)"
+          },
+          "isDefault": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CreateAssignmentDto": {
+        "type": "object",
+        "properties": {
+          "personCode": {
+            "type": "string",
+            "description": "รหัสบุคลากรใน Core Hub (personCode)"
+          },
+          "trackId": {
+            "type": "string",
+            "description": "อาจารย์ประจำสายงาน (ดูแลทุกวิชาในสายงาน)"
+          },
+          "courseId": {
+            "type": "string",
+            "description": "ผู้รับผิดชอบวิชาเดียว"
+          }
+        },
+        "required": [
+          "personCode"
+        ]
+      }
+    }
+  }
+}

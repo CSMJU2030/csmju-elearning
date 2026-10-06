@@ -1,7 +1,13 @@
-# ฐานข้อมูล PostgreSQL สำหรับเครื่องพัฒนา (ใช้แทนการติดตั้ง PostgreSQL เองได้)
-#   docker compose up -d db
-# แล้วตั้ง backend/.env: DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@localhost:5434/csmju_elearning_db?schema=public
-# รหัสผ่านอ่านจาก env POSTGRES_PASSWORD ของเครื่อง (ห้ามเขียนลงไฟล์นี้)
+# ทดสอบแบบเดียวกับ server (docs/deployment.md ข้อ 6) — service ต้องชื่อ db · api · web
+#   export POSTGRES_PASSWORD=...   (ตัวอักษรและตัวเลขล้วน เพราะใช้ต่อเป็น DATABASE_URL)
+#   docker compose up -d --build   แล้วเปิด http://localhost:3212
+# ใช้แค่ฐานข้อมูลตอนพัฒนา: docker compose up -d db แล้วชี้ backend/.env ไป localhost:5434
+x-hardening: &hardening
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ['no-new-privileges:true']
+  logging: { driver: json-file, options: { max-size: '10m', max-file: '3' } }
+
 services:
   db:
     image: postgres:16
@@ -10,9 +16,57 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?ตั้ง POSTGRES_PASSWORD ก่อนรัน}
     ports:
-      - "5434:5432"
+      - "127.0.0.1:5434:5432"
     volumes:
       - elearning-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d csmju_elearning_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    <<: *hardening
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/csmju_elearning_db?schema=public
+      DATABASE_POOL_MAX: 5
+      CORE_HUB_URL: https://csmju2030.jowave.com
+      CORE_HUB_JWKS_URL: https://csmju2030.jowave.com/api/v1/.well-known/jwks.json
+      CORE_HUB_WEB_URL: https://csmju2030.jowave.com
+      CORE_HUB_ISSUER: core-hub
+      CORE_HUB_AUDIENCE: csmju2030
+      SUBSYSTEM_ID: csmju-elearning
+      TZ: Asia/Bangkok
+    tmpfs:
+      - /tmp:size=32m
+    mem_limit: 512m
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    <<: *hardening
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    environment:
+      CORE_HUB_WEB_URL: https://csmju2030.jowave.com
+      SUBSYSTEM_ID: csmju-elearning
+      TZ: Asia/Bangkok
+    tmpfs:
+      - /tmp:size=32m
+      - /app/frontend/.next/cache:size=64m
+    ports:
+      - "127.0.0.1:3212:3000"
+    mem_limit: 384m
+    depends_on:
+      api:
+        condition: service_healthy
 
 volumes:
   elearning-db:

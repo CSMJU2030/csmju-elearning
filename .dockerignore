@@ -1,0 +1,14 @@
+# build context = รากของ repo (docs/deployment.md ข้อ 3) — กัน secret และของเครื่องออกจาก image
+**/.env*
+!**/.env.example
+**/node_modules
+**/.next
+**/dist
+**/coverage
+**/generated
+.git
+.github
+standards
+create.md
+*.md
+!README.md

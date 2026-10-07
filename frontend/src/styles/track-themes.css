@@ -1,0 +1,68 @@
+/*
+ * ธีมสีตามสายงาน — หน้าเว็บเปลี่ยนสีตามสายงานที่กำลังเรียน (และการ์ดแต่ละสายงานใช้สีของตัวเอง)
+ *
+ * ไม่ได้สร้างสีใหม่และไม่มี hex ดิบ: แค่ชี้ token กลาง (--color-primary-container · --color-accent · --color-primary)
+ * ไปที่ palette มาตรฐานของ Tailwind ภายในกล่องที่มี class นี้ class ทุกตัวของ design system
+ * (bg-primary-container · btn-gradient · text-primary ฯลฯ) จึงเปลี่ยนสีตามโดยไม่ต้องแก้ globals.css หรือ csmju/
+ * เลือกเฉด -700 ให้ตัวอักษรขาวบนพื้นสีมี contrast ≥ 4.5:1 (ui-design-system.md ข้อ 12)
+ *
+ * BLUE = สีหลักของระบบอยู่แล้ว จึงไม่ต้อง override
+ */
+@reference "../app/globals.css";
+
+.track-theme-purple {
+  --color-primary-container: var(--color-violet-700);
+  --color-primary: var(--color-violet-800);
+  --color-accent: var(--color-violet-500);
+}
+
+.track-theme-red {
+  --color-primary-container: var(--color-red-700);
+  --color-primary: var(--color-red-800);
+  --color-accent: var(--color-red-500);
+}
+
+.track-theme-yellow {
+  --color-primary-container: var(--color-amber-700);
+  --color-primary: var(--color-amber-800);
+  --color-accent: var(--color-amber-500);
+}
+
+.track-theme-teal {
+  --color-primary-container: var(--color-teal-700);
+  --color-primary: var(--color-teal-800);
+  --color-accent: var(--color-teal-500);
+}
+
+/* แถบความคืบหน้า — ความกว้างมาจากค่า --progress ที่คำนวณตอน runtime */
+.progress-fill {
+  width: var(--progress, 0%);
+  transition: width 300ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress-fill {
+    transition-duration: 1ms;
+  }
+}
+
+/* พิมพ์เฉพาะเกียรติบัตร (หน้า /certificates/[id]) */
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 0;
+  }
+  body * {
+    visibility: hidden;
+  }
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+  .print-area {
+    position: fixed;
+    inset: 0;
+    border: 0;
+    box-shadow: none;
+  }
+}

@@ -1,0 +1,296 @@
+// ═══════════════════════════════════════════════════════════════════════
+//  CSMJU E-Learning — โครงฐานข้อมูล (standards 1.7.4 · Prisma 7 + PrismaPg)
+//
+//  สายงาน (tracks) → วิชา (courses) → หัวข้อ (topics) → วิดีโอการสอน (videos)
+//  วิชาจบด้วยแบบทดสอบ (quiz_questions · quiz_choices) ที่ต้องตอบถูกตามจำนวนที่กำหนด
+//  ผู้เรียนสมัครเรียนทีละสายงาน (enrollments) · เวลาเรียนจริงเก็บใน video_progress
+//  จบสายงาน = ผ่านทุกวิชา → certificates (ใช้ certificate_templates)
+//  อาจารย์ประจำสายงาน/วิชา = instructor_assignments (สิทธิ์ Layer 2 ของระบบนี้)
+//
+//  ตัวตนผู้ใช้เป็นของ Core Hub — ระบบนี้ไม่มีตาราง users และไม่เก็บชื่อ/อีเมล/รหัสผ่าน
+//  เก็บแค่ core_user_id (claim sub) กับ person_code (จาก /people/me) ตาม reference-data.md ข้อ 8
+//  รายวิชาของหลักสูตรอ้างด้วย course_code ของ Core Hub (code เต็มรวมรุ่น เช่น 10301111-68)
+//
+//  กติกาที่ Prisma เขียนตรง ๆ ไม่ได้ (CHECK · partial unique index) อยู่ใน
+//  migrations/*_learning_rules
+// ═══════════════════════════════════════════════════════════════════════
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────── enum ───────────────────────────
+
+/// สีประจำสายงาน — หน้าเว็บเปลี่ยนสีตามสายงานที่กำลังเรียน
+enum TrackColor {
+  BLUE
+  PURPLE
+  RED
+  YELLOW
+  TEAL
+}
+
+enum EnrollmentStatus {
+  /// กำลังเรียน — มีได้คนละ 1 สายงานเท่านั้น
+  ACTIVE
+  /// เรียนจบแล้ว — เก็บไว้ตลอด ได้เกียรติบัตร
+  COMPLETED
+  /// ออกจากสายงาน — ความคืบหน้าถูกล้างแล้ว เก็บแถวไว้นับสถิติ
+  WITHDRAWN
+}
+
+// ─────────────────────────── หลักสูตรของระบบ ───────────────────────────
+
+model Track {
+  id                    String     @id @default(uuid())
+  slug                  String     @unique
+  nameTh                String     @map("name_th")
+  nameEn                String     @map("name_en")
+  summary               String
+  description           String
+  color                 TrackColor
+  sortOrder             Int        @default(0) @map("sort_order")
+  isPublished           Boolean    @default(true) @map("is_published")
+  certificateTemplateId String?    @map("certificate_template_id")
+  createdAt             DateTime   @default(now()) @map("created_at")
+  updatedAt             DateTime   @updatedAt @map("updated_at")
+
+  certificateTemplate CertificateTemplate?   @relation(fields: [certificateTemplateId], references: [id], onDelete: SetNull)
+  courses             Course[]
+  enrollments         Enrollment[]
+  certificates        Certificate[]
+  assignments         InstructorAssignment[]
+
+  @@index([sortOrder])
+  @@map("tracks")
+}
+
+model Course {
+  id            String   @id @default(uuid())
+  trackId       String   @map("track_id")
+  /// รหัสวิชาของ Core Hub (code เต็มรวมรุ่น) — ไม่บังคับ วิชาเสริมที่ไม่อยู่ในหลักสูตรเว้นว่างได้
+  courseCode    String?  @map("course_code")
+  title         String
+  description   String   @default("")
+  sortOrder     Int      @default(0) @map("sort_order")
+  /// จำนวนข้อที่ต้องตอบถูกจึงจะผ่านแบบทดสอบท้ายวิชา
+  quizPassCount Int      @default(1) @map("quiz_pass_count")
+  isPublished   Boolean  @default(true) @map("is_published")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  track       Track                  @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  topics      Topic[]
+  questions   QuizQuestion[]
+  attempts    QuizAttempt[]
+  assignments InstructorAssignment[]
+
+  @@index([trackId, sortOrder])
+  @@index([courseCode])
+  @@map("courses")
+}
+
+model Topic {
+  id          String   @id @default(uuid())
+  courseId    String   @map("course_id")
+  title       String
+  description String   @default("")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  course Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  videos Video[]
+
+  @@index([courseId, sortOrder])
+  @@map("topics")
+}
+
+model Video {
+  id              String   @id @default(uuid())
+  topicId         String   @map("topic_id")
+  title           String
+  /// ลิงก์ YouTube หรือไฟล์วิดีโอ (https) ที่เบราว์เซอร์เล่นได้
+  videoUrl        String   @map("video_url")
+  /// ความยาววิดีโอ — ใช้คิดเวลาเรียนขั้นต่ำ
+  durationSeconds Int      @map("duration_seconds")
+  sortOrder       Int      @default(0) @map("sort_order")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  topic    Topic           @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  progress VideoProgress[]
+
+  @@index([topicId, sortOrder])
+  @@map("videos")
+}
+
+model QuizQuestion {
+  id          String   @id @default(uuid())
+  courseId    String   @map("course_id")
+  prompt      String
+  explanation String   @default("")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  course  Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  choices QuizChoice[]
+
+  @@index([courseId, sortOrder])
+  @@map("quiz_questions")
+}
+
+model QuizChoice {
+  id         String   @id @default(uuid())
+  questionId String   @map("question_id")
+  label      String
+  isCorrect  Boolean  @default(false) @map("is_correct")
+  sortOrder  Int      @default(0) @map("sort_order")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  question QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([questionId, sortOrder])
+  @@map("quiz_choices")
+}
+
+model CertificateTemplate {
+  id          String   @id @default(uuid())
+  name        String
+  /// หัวเกียรติบัตร เช่น "เกียรติบัตร"
+  heading     String
+  /// ข้อความ — ใช้ {name} {track} {date} {certificateNo} แทนค่าตอนแสดงผล
+  bodyText    String   @map("body_text")
+  signerName  String   @map("signer_name")
+  signerTitle String   @map("signer_title")
+  /// id ของรูปจาก Core Hub POST /images (ตราหรือลายเซ็น) — ไม่บังคับ
+  imageId     String?  @map("image_id")
+  isDefault   Boolean  @default(false) @map("is_default")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  tracks       Track[]
+  certificates Certificate[]
+
+  @@map("certificate_templates")
+}
+
+// ─────────────────────────── การเรียนของผู้ใช้ ───────────────────────────
+
+model Enrollment {
+  id          String           @id @default(uuid())
+  /// claim sub — text ≤ 64 · ไม่ใช่ UUID · ไม่ unique
+  coreUserId  String           @map("core_user_id")
+  /// จาก Core Hub /people/me ตอนสมัคร · null ได้ (บัญชีไม่ผูกกับบุคคล)
+  personCode  String?          @map("person_code")
+  trackId     String           @map("track_id")
+  status      EnrollmentStatus @default(ACTIVE)
+  enrolledAt  DateTime         @default(now()) @map("enrolled_at")
+  completedAt DateTime?        @map("completed_at")
+  withdrawnAt DateTime?        @map("withdrawn_at")
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+
+  track        Track           @relation(fields: [trackId], references: [id], onDelete: Restrict)
+  videoProgress VideoProgress[]
+  quizAttempts QuizAttempt[]
+  certificate  Certificate?
+
+  @@index([coreUserId, status])
+  @@index([trackId, status])
+  @@map("enrollments")
+}
+
+/// เวลาเรียนจริงต่อวิดีโอ — นับจาก heartbeat ที่ server จับเวลาเอง (ไม่เชื่อเวลาจากเบราว์เซอร์)
+model VideoProgress {
+  id              String    @id @default(uuid())
+  enrollmentId    String    @map("enrollment_id")
+  videoId         String    @map("video_id")
+  watchedSeconds  Int       @default(0) @map("watched_seconds")
+  positionSeconds Int       @default(0) @map("position_seconds")
+  lastHeartbeatAt DateTime? @map("last_heartbeat_at")
+  isCompleted     Boolean   @default(false) @map("is_completed")
+  completedAt     DateTime? @map("completed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  video      Video      @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@unique([enrollmentId, videoId])
+  @@index([videoId])
+  @@map("video_progress")
+}
+
+model QuizAttempt {
+  id           String   @id @default(uuid())
+  enrollmentId String   @map("enrollment_id")
+  courseId     String   @map("course_id")
+  correctCount Int      @map("correct_count")
+  totalCount   Int      @map("total_count")
+  passCount    Int      @map("pass_count")
+  isPassed     Boolean  @map("is_passed")
+  /// [{ questionId, choiceId }] ที่ผู้เรียกส่งมา
+  answers      Json
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  course     Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([enrollmentId, courseId])
+  @@map("quiz_attempts")
+}
+
+model Certificate {
+  id            String   @id @default(uuid())
+  certificateNo String   @unique @map("certificate_no")
+  coreUserId    String   @map("core_user_id")
+  personCode    String?  @map("person_code")
+  trackId       String   @map("track_id")
+  enrollmentId  String   @unique @map("enrollment_id")
+  templateId    String?  @map("template_id")
+  issuedAt      DateTime @default(now()) @map("issued_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  track      Track                @relation(fields: [trackId], references: [id], onDelete: Restrict)
+  enrollment Enrollment           @relation(fields: [enrollmentId], references: [id], onDelete: Restrict)
+  template   CertificateTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+
+  @@index([coreUserId])
+  @@index([trackId, issuedAt])
+  @@map("certificates")
+}
+
+// ─────────────────────────── สิทธิ์ Layer 2 ───────────────────────────
+
+/// อาจารย์ประจำสายงาน (track_id) หรือผู้รับผิดชอบวิชา (course_id) — ต้องระบุอย่างใดอย่างหนึ่ง
+model InstructorAssignment {
+  id                    String   @id @default(uuid())
+  /// sub ของบัญชีที่ผูกกับบุคคลนี้ (coreUserId จาก Core Hub /people) · null = ยังไม่มีบัญชี
+  coreUserId            String?  @map("core_user_id")
+  personCode            String   @map("person_code")
+  trackId               String?  @map("track_id")
+  courseId              String?  @map("course_id")
+  assignedByCoreUserId  String   @map("assigned_by_core_user_id")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  track  Track?  @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  course Course? @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([coreUserId])
+  @@index([personCode])
+  @@index([trackId])
+  @@index([courseId])
+  @@map("instructor_assignments")
+}
